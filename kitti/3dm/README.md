@@ -76,10 +76,10 @@ ffmpeg -r 10 -i outputs/images/bbox-%04d.png -vf "scale=trunc(iw/2)*2:trunc(ih/2
 
 ffmpeg -i bbox.mp4 -an -r 10 outputs/temp/%04d.png
 convert outputs/temp/*.png -resize 50% outputs/temp/output_%04d.png
-convert outputs/temp/output_*.png outputs/bbx.gif 
+convert outputs/temp/output_*.png outputs/bbox.gif 
 ```
 
-![Bbox image](outputs/sample.gif)
+![Bbox image](outputs/bbox.gif)
 
 - Run [OpenVSLAM](https://github.com/xdspacelab/openvslam) to output a pose file `keyframe_trajectory.txt`.
 
