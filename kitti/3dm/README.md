@@ -75,8 +75,8 @@ python bbox_viewer.py \
 ffmpeg -r 10 -i outputs/images/bbox-%04d.png -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -vcodec libx264 -pix_fmt yuv420p -r 10 outputs/bbox.mp4
 
 ffmpeg -i bbox.mp4 -an -r 10 outputs/temp/%04d.png
-convert outputs/temp/*.png -resize 20% outputs/temp/output_%04d.png
-convert outputs/temp/output_*.png outputs/sample.gif 
+convert outputs/temp/*.png -resize 50% outputs/temp/output_%04d.png
+convert outputs/temp/output_*.png outputs/bbx.gif 
 ```
 
 ![Bbox image](outputs/sample.gif)
