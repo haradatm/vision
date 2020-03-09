@@ -2,7 +2,7 @@
 
 ### Description
 
-This example code is a text clustering using BERT embeddings.
+This example code is a OpenCV example code for Visual SLAM.
 
 ### Dependencies
 - Python 3.7
@@ -14,6 +14,12 @@ In addition, please add the project folder to PYTHONPATH and `conca install` the
 - `scipy`
 - `matplotlib`
 - `pyproj`
+
+### ToDo ###
+
+- [x] A fairly naive implementation (including moving objects).
+- [ ] Object position estimation excluding moving objects.
+- [ ] Evaluation using the location of the tracking dataset.
 
 ### Usage ###
 
