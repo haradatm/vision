@@ -48,6 +48,7 @@ def main():
     parser.add_argument('--pose_file', default='frame_trajectory.txt', help='pose file')
     parser.add_argument('--transform_file', default='umeyama.txt', help='transfom matrix file')
     parser.add_argument('--output_dir', default='outputs', help='label file')
+    parser.add_argument('--exclude_objects', type=int, nargs='+', default=None, help='moving objects to exclude')
     args = parser.parse_args()
     # args = parser.parse_args(args=[])
     logger.info(json.dumps(args.__dict__, indent=2))
@@ -154,6 +155,9 @@ def main():
         location = list(map(lambda x: float(x), cols[13:16]))
 
         if object_type == "DontCare":
+            continue
+
+        if track_id in args.exclude_objects:
             continue
 
         left, top, right, bottom = bbox
@@ -306,11 +310,11 @@ def main():
     ax.scatter(traj[:, 0], traj[:, 1], -traj[:, 2], c='blue', marker='.')
     ax.scatter(cars[:, 0], cars[:, 1], -cars[:, 2], c='red', marker='x')
     ax.scatter(not_cars[:, 0], not_cars[:, 1], -not_cars[:, 2], c='orange', marker='x')
-    ax.set_xlabel('X (East-West)')
-    ax.set_ylabel('Y (North-South)')
-    ax.set_zlabel('Z (Altitude)')
-    plt.title("EPSG_%s" % 31466)
-    plt.legend(['Trajectory', 'Cars', 'Not Cars'], loc="best")
+    ax.set_xlabel('X (East-West) [meter]')
+    ax.set_ylabel('Y (North-South) [meter]')
+    ax.set_zlabel('Z (Altitude) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['Trajectory', 'Cars', 'Others'], loc="best")
     plt.savefig("result-3dm_poses-3d.png")
     plt.show()
     plt.close()
@@ -320,10 +324,10 @@ def main():
     ax.scatter(traj[:, 0], traj[:, 1], c='blue', marker='.')
     ax.scatter(cars[:, 0], cars[:, 1], c='red', marker='x')
     ax.scatter(not_cars[:, 0], not_cars[:, 1], c='orange', marker='x')
-    ax.set_xlabel('X (East-West)')
-    ax.set_ylabel('Y (North-South)')
-    plt.title("EPSG_%s" % 31466)
-    plt.legend(['Trajectory', 'Cars', 'Not Cars'], loc="best")
+    ax.set_xlabel('X (East-West) [meter]')
+    ax.set_ylabel('Y (North-South) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['Trajectory', 'Cars', 'Others'], loc="best")
     plt.savefig("result-3dm_poses-xy.png")
     plt.show()
     plt.close()
@@ -333,10 +337,10 @@ def main():
     ax.scatter(traj[:, 0], -traj[:, 2], c='blue', marker='.')
     ax.scatter(cars[:, 0], -cars[:, 2], c='red', marker='x')
     ax.scatter(not_cars[:, 0], -not_cars[:, 2], c='orange', marker='x')
-    ax.set_xlabel('X (East-West)')
-    ax.set_ylabel('Z (Altitude)')
-    plt.title("EPSG_%s" % 31466)
-    plt.legend(['Trajectory', 'Cars', 'Not Cars'], loc="best")
+    ax.set_xlabel('X (East-West) [meter]')
+    ax.set_ylabel('Z (Altitude) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['Trajectory', 'Cars', 'Others'], loc="best")
     plt.savefig("result-3dm_poses-xz.png")
     plt.show()
     plt.close()

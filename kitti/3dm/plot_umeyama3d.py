@@ -80,7 +80,7 @@ def align_umeyama(model, data, known_scale=False, yaw_only=False):
     return s, R, t
 
 
-def plot_trajectory(gt, est, epsg=3857):
+def plot_trajectory(gt, est, epsg=3857, camera_height=1.65):
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -143,7 +143,7 @@ def plot_trajectory(gt, est, epsg=3857):
 
     for i, gt_p in enumerate(gt):
         # (lan, lon, alt) -> (lon, lan, alt)
-        x, y, z = pyproj.transform(trans_from, trans_to, gt_p[1], gt_p[0], gt_p[2])
+        x, y, z = pyproj.transform(trans_from, trans_to, gt_p[1], gt_p[0], gt_p[2] + camera_height)
         if i == 0:
             init_x, init_y, init_z = (x, y, z)
         gt_trans.append((x - init_x, y - init_y, z - init_z))
@@ -221,6 +221,7 @@ def main():
     parser = argparse.ArgumentParser(description='umeyama alignment')
     parser.add_argument('--gt',  default='gt.txt',  help='ground truth potions (.txt)')
     parser.add_argument('--est', default='est.txt', help='estimated potions (.txt)')
+    parser.add_argument('--camera_height', default=1.65, help='camera height')
     args = parser.parse_args()
     # args = parser.parse_args(args=[])
     logger.info(json.dumps(args.__dict__, indent=2))
@@ -243,8 +244,8 @@ def main():
         cols = line.strip().split(' ')
         est.append([float(x) for x in cols[:3]])    # (x, y, z)
 
-    # U, scale = plot_trajectory(gt, est, epsg=3857)    # EPSG  3857: 球面メルカトル図法
-    U, scale = plot_trajectory(gt, est, epsg=31466)     # EPSG 31466: DE:ガウスクルーガー, GK 2
+    # U, scale = plot_trajectory(gt, est, epsg=3857, camera_height=args.camera_height)  # EPSG  3857: 球面メルカトル図法
+    U, scale = plot_trajectory(gt, est, epsg=31466, camera_height=args.camera_height)   # EPSG 31466: DE:ガウスクルーガー, GK 2
 
     print(
         "R[0,0] R[0,1] R[0,2] t[0] "

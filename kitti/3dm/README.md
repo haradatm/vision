@@ -10,7 +10,7 @@ This example code is a OpenCV example code for Visual SLAM.
 - [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2)
 
 In addition, please add the project folder to PYTHONPATH and `conca install` the following packages:
-- `cv2`
+- `cv2`z
 - `scipy`
 - `matplotlib`
 - `pyproj`
@@ -127,7 +127,14 @@ datasets/data_tracking/sequences/01
 cat datasets/data_tracking/data_tracking_oxts/training/oxts/0001.txt | cut -d " " -f 1-3 > outputs/gt-trajectory-0001.txt
 cat outputs/frameTrajectory.txt | cut -d " " -f 2-4 > outputs/est-trajectory-0001.txt
 python plot_umeyama3d.py --gt outputs/gt-trajectory-0001.txt --est outputs/est-trajectory-0001.txt > outputs/umeyama.txt
-
+2020-03-08 18:12:13,027 - main - INFO - {
+  "gt": "outputs/gt-trajectory-0001.txt",
+  "est": "outputs/est-trajectory-0001.txt",
+  "camera_height": 1.65
+}
+```
+```
+cat outputs/umeyama.txt
 R[0,0] R[0,1] R[0,2] t[0] R[1,0] R[1,1] R[1,2] t[1] R[2,0] R[2,1] R[2,2] t[2] s
 -0.261392 0.027647 0.964837 4.624747 -0.962645 0.065678 -0.262680 -1.049018 -0.070631 -0.997458 0.009446 -0.087966 21.330576
 ```
@@ -148,7 +155,24 @@ python 3dm_poses.py \
 --calib_file datasets/data_tracking/data_tracking_calib/training/calib/0001.txt \
 --pose_file outputs/frameTrajectory.txt \
 --transform_file outputs/umeyama.txt \
+--exclude_objects 8 12 44 45 81 82 83 84 86 87 88 96 \
 | tee outputs/result-3dm_poses.txt
+
+2020-03-08 18:49:34,255 - main - INFO - {
+  "label_file": "datasets/data_tracking/data_tracking_label_2/training/label_02/0001.txt",
+  "calib_file": "datasets/data_tracking/data_tracking_calib/training/calib/0001.txt",
+  "pose_file": "outputs/frameTrajectory.txt",
+  "transform_file": "outputs/umeyama.txt",
+  "output_dir": "outputs",
+  "exclude_objects": [ 8, 12, 44, 45, 81, 82, 83, 84, 86, 87, 88, 96 ]
+}
+2020-03-08 18:49:34,256 - main - INFO - --- K ----------
+2020-03-08 18:49:34,256 - main - INFO - [[721.5377   0.     609.5593]
+ [  0.     721.5377 172.854 ]
+ [  0.       0.       1.    ]]
+2020-03-08 18:49:34,256 - main - INFO - --- dist_coef ----------
+2020-03-08 18:49:34,256 - main - INFO - [[0. 0. 0. 0. 0.]]
+:
 ```
 
 - Experiment’s results
