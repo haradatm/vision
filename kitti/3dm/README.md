@@ -186,6 +186,6 @@ track_id	object_type	utw1_x	utw1_y	utw1_z	utw2 x	utw2 y	utw2_z	uXw_x	uXw_y	uXw_z
 :
 ```
 
-|3D|X-Z|X-Y| 
+|3D|X-Y|X-Z|
 |---|---|---|
 |![3D](outputs/result-3dm_poses-3d.png)|![X-Y](outputs/result-3dm_poses-xy.png)|![X-Z](outputs/result-3dm_poses-xz.png)|
