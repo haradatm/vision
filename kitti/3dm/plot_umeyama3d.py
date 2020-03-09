@@ -31,55 +31,6 @@ from scipy.spatial.transform import Rotation
 import pyproj
 
 
-def umeyama_alignment(x, y, with_scale=False):
-    """
-    Computes the least squares solution parameters of an Sim(m) matrix
-    that minimizes the distance between a set of registered points.
-    Umeyama, Shinji: Least-squares estimation of transformation parameters
-                     between two point patterns. IEEE PAMI, 1991
-    :param x: mxn matrix of points, m = dimension, n = nr. of data points
-    :param y: mxn matrix of points, m = dimension, n = nr. of data points
-    :param with_scale: set to True to align also the scale (default: 1.0 scale)
-    :return: r, t, c - rotation matrix, translation vector and scale factor
-    """
-    # assert x.shape == y.shape
-
-    # m = dimension, n = nr. of data points
-    m, n = x.shape
-
-    # means, eq. 34 and 35
-    mean_x = x.mean(axis=1)
-    mean_y = y.mean(axis=1)
-
-    # variance, eq. 36
-    # "transpose" for column subtraction
-    sigma_x = 1.0 / n * (np.linalg.norm(x - mean_x[:, np.newaxis])**2)
-
-    # covariance matrix, eq. 38
-    outer_sum = np.zeros((m, m))
-    for i in range(n):
-        outer_sum += np.outer((y[:, i] - mean_y), (x[:, i] - mean_x))
-    cov_xy = np.multiply(1.0 / n, outer_sum)
-
-    # SVD (text betw. eq. 38 and 39)
-    u, d, v = np.linalg.svd(cov_xy)
-
-    # S matrix, eq. 43
-    s = np.eye(m)
-    if np.linalg.det(u) * np.linalg.det(v) < 0.0:
-        # Ensure a RHS coordinate system (Kabsch algorithm).
-        s[m - 1, m - 1] = -1
-
-    # rotation, eq. 40
-    r = u.dot(s).dot(v)
-
-    # scale & translation, eq. 42 and 41
-    c = 1 / sigma_x * np.trace(np.diag(d).dot(s)) if with_scale else 1.0
-    t = mean_y - np.multiply(c, r.dot(mean_x))
-
-    return r, t, c
-
-
 def align_umeyama(model, data, known_scale=False, yaw_only=False):
     """Implementation of the paper: S. Umeyama, Least-Squares Estimation
     of Transformation Parameters Between Two Point Patterns,
@@ -130,6 +81,60 @@ def align_umeyama(model, data, known_scale=False, yaw_only=False):
 
 
 def plot_trajectory(gt, est, epsg=3857):
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for est_p in est:
+        ax.scatter(est_p[0], est_p[1], est_p[2], c='red',  marker='.')
+    ax.scatter(0., 0., 0., c='black', marker='x')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.title("Camera 3D")
+    plt.legend(['trajectory'], loc="best")
+    plt.savefig("plot_camera-3d.png")
+    plt.show()
+    plt.close()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for i, est_p in enumerate(est):
+        ax.scatter(est_p[0], est_p[1], c='red',  marker='.')
+    ax.scatter(0., 0., c='black', marker='x')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    plt.title("Camera X-Y")
+    plt.legend(['trajectory'], loc="best")
+    plt.savefig("plot_camera-xy.png")
+    plt.show()
+    plt.close()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for est_p in est:
+        ax.scatter(est_p[0], est_p[2], c='red',  marker='.')
+    ax.scatter(0., 0., c='black', marker='x')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Z')
+    plt.title("Camera X-Z")
+    plt.legend(['trajectory'], loc="best")
+    plt.savefig("plot_camera-xz.png")
+    plt.show()
+    plt.close()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for est_p in est:
+        ax.scatter(est_p[2], est_p[1], c='red',  marker='.')
+    ax.scatter(0., 0., c='black', marker='x')
+    ax.set_xlabel('Z')
+    ax.set_ylabel('Y')
+    plt.title("Camera Z-Y")
+    plt.legend(['trajectory'], loc="best")
+    plt.savefig("plot_camera-zy.png")
+    plt.show()
+    plt.close()
+
     trans_from = pyproj.Proj('+init=EPSG:%s' % 4326)
     trans_to   = pyproj.Proj('+init=EPSG:%s' % epsg)
 
@@ -160,11 +165,11 @@ def plot_trajectory(gt, est, epsg=3857):
     for i, (gt_p, est_p) in enumerate(zip(gt_trans, est_umeyama)):
         ax.scatter( gt_p[0],  gt_p[1],  gt_p[2], c='blue', marker='.')
         ax.scatter(est_p[0], est_p[1], est_p[2], c='red',  marker='.')
-    ax.set_xlabel('X (East-West)')
-    ax.set_ylabel('Y (North-South)')
-    ax.set_zlabel('Z (Altitude)')
-    plt.title("EPSG_%s" % epsg)
-    plt.legend(['ground truth', 'estimate'], loc="best")
+    ax.set_xlabel('X (East-West) [meter]')
+    ax.set_ylabel('Y (North-South) [meter]')
+    ax.set_zlabel('Z (Altitude) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['ground truth', 'trajectory'], loc="best")
     plt.savefig("plot_EPSG%s-3d.png" % epsg)
     plt.show()
     plt.close()
@@ -174,10 +179,10 @@ def plot_trajectory(gt, est, epsg=3857):
     for i, (gt_p, est_p) in enumerate(zip(gt_trans, est_umeyama)):
         ax.scatter( gt_p[0],  gt_p[1], c='blue', marker='.')
         ax.scatter(est_p[0], est_p[1], c='red',  marker='.')
-    ax.set_xlabel('X (East-West)')
-    ax.set_ylabel('Y (North-South)')
-    plt.title("EPSG_%s" % epsg)
-    plt.legend(['ground truth', 'estimate'], loc="best")
+    ax.set_xlabel('X (East-West) [meter]')
+    ax.set_ylabel('Y (North-South) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['ground truth', 'trajectory'], loc="best")
     plt.savefig("plot_EPSG%s-xy.png" % epsg)
     plt.show()
     plt.close()
@@ -187,11 +192,24 @@ def plot_trajectory(gt, est, epsg=3857):
     for i, (gt_p, est_p) in enumerate(zip(gt_trans, est_umeyama)):
         ax.scatter( gt_p[0],  gt_p[2], c='blue', marker='.')
         ax.scatter(est_p[0], est_p[2], c='red',  marker='.')
-    ax.set_xlabel('X (East-West)')
-    ax.set_ylabel('Z (Altitude)')
-    plt.title("EPSG_%s" % epsg)
-    plt.legend(['ground truth', 'estimate'], loc="best")
+    ax.set_xlabel('X (East-West) [meter]')
+    ax.set_ylabel('Z (Altitude) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['ground truth', 'trajectory'], loc="best")
     plt.savefig("plot_EPSG%s-xz.png" % epsg)
+    plt.show()
+    plt.close()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for i, (gt_p, est_p) in enumerate(zip(gt_trans, est_umeyama)):
+        ax.scatter( gt_p[1],  gt_p[2], c='blue', marker='.')
+        ax.scatter(est_p[1], est_p[2], c='red',  marker='.')
+    ax.set_xlabel('Y (North-South) [meter]')
+    ax.set_ylabel('Z (Altitude) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['ground truth', 'trajectory'], loc="best")
+    plt.savefig("plot_EPSG%s-yz.png" % epsg)
     plt.show()
     plt.close()
 

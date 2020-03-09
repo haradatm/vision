@@ -126,9 +126,13 @@ R[0,0] R[0,1] R[0,2] t[0] R[1,0] R[1,1] R[1,2] t[1] R[2,0] R[2,1] R[2,2] t[2] s
 -0.261392 0.027647 0.964837 4.624747 -0.962645 0.065678 -0.262680 -1.049018 -0.070631 -0.997458 0.009446 -0.087966 21.330576
 ```
 
-|3D|X-Z|X-Y| 
+|Camera 3D|Camera X-Z|Camera X-Y| 
 |---|---|---|
-|![3D](outputs/plot_EPSG31466-3d.png)|![X-Z](outputs/plot_EPSG31466-xz.png)|![X-Y](outputs/plot_EPSG31466-xy.png)|
+|![3D](outputs/plot_camera-3d.png)|![X-Z](outputs/plot_camera-xz.png)|![X-Y](outputs/plot_camera-xy.png)|
+
+|EPSG31466 (DE:GK2) 3D|EPSG31466 (DE:GK2) X-Y|EPSG31466 (DE:GK2) X-Y| 
+|---|---|---|
+|![3D](outputs/plot_EPSG31466-3d.png)|![X-Y](outputs/plot_EPSG31466-xy.png)|![X-Z](outputs/plot_EPSG31466-xz.png)|
 
 - Estimate 3D position using camera poses. (`frameTrajectory.txt`)
 
