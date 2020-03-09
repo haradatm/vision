@@ -18,7 +18,8 @@ In addition, please add the project folder to PYTHONPATH and `conca install` the
 ### ToDo ###
 
 - [x] A fairly naive implementation (including moving objects).
-- [ ] Object position estimation excluding moving objects.
+- [x] Object position estimation excluding moving objects. (track# 8 12 44 45 81 82 83 84 86 87 88 96)
+- [x] Consider camera height. (1.65 m)
 - [ ] Evaluation using the location of the tracking dataset.
 
 ### Usage ###
