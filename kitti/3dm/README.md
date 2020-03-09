@@ -10,7 +10,7 @@ This example code is a OpenCV example code for Visual SLAM.
 - [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2)
 
 In addition, please add the project folder to PYTHONPATH and `conca install` the following packages:
-- `cv2`z
+- `cv2`
 - `scipy`
 - `matplotlib`
 - `pyproj`
