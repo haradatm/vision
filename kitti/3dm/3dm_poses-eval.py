@@ -40,6 +40,14 @@ def umeyama_transform(pt, U, scale):
     return pt
 
 
+def umeyama_transform_inv(pt, U, scale):
+    R, t = U[:, :3], U[:, -1].reshape(3)
+    pt = pt - t
+    pt = np.dot(np.linalg.inv(R), pt)
+    pt = pt / scale
+    return pt
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='')
@@ -255,19 +263,28 @@ def main():
             utw2 = umeyama_transform(tw2, U, scale)
             uXw  = umeyama_transform(Xw,  U, scale)
 
+            lw1 = tw1 + np.array(location1, 'f') / scale
+            lw2 = tw2 + np.array(location2, 'f') / scale
+            ulw1 = umeyama_transform(lw1, U, scale)
+            ulw2 = umeyama_transform(lw2, U, scale)
+
             results[(track_id, object_type1)].append([
                 utw1[0], utw1[1], utw1[2],
                 utw2[0], utw2[1], utw2[2],
                 uXw[0],  uXw[1],  uXw[2],
+                ulw1[0], ulw1[1], ulw1[2],
+                ulw2[0], ulw2[1], ulw2[2],
             ])
 
     results_center = {}
     for (track_id, object_type), coords in results.items():
         coords = np.array(coords, 'f')
-        utw1 = np.median(coords[:, :3], axis=0)
-        utw2 = np.median(coords[:, 3:6], axis=0)
-        uXw  = np.median(coords[:, 6:9], axis=0)
-        results_center[(track_id, object_type)] = (utw1, utw2, uXw)
+        utw1 = np.median(coords[:, : 3], axis=0)
+        utw2 = np.median(coords[:, 3: 6], axis=0)
+        uXw = np.median(coords[:, 6: 9], axis=0)
+        ulw1 = np.median(coords[:, 9:12], axis=0)
+        ulw2 = np.median(coords[:, 12:], axis=0)
+        results_center[(track_id, object_type)] = (utw1, utw2, uXw, ulw1, ulw2)
 
     # STDOUT
     print(
@@ -275,11 +292,15 @@ def main():
         "utw1_x\tutw1_y\tutw1_z\t"
         "utw2 x\tutw2 y\tutw2_z\t"
         "uXw_x\tuXw_y\tuXw_z"
+        "ulw1_x\tulw1_y\tulw1_z\t"
+        "ulw2 x\tulw2 y\tulw2_z\t"
     )
     for (track_id, object_type), coords in results_center.items():
-        utw1, utw2, uXw = coords
+        utw1, utw2, uXw, ulw1, ulw2 = coords
         print(
             "%d\t%s\t"
+            "%.6f\t%.6f\t%.6f\t"
+            "%.6f\t%.6f\t%.6f\t"
             "%.6f\t%.6f\t%.6f\t"
             "%.6f\t%.6f\t%.6f\t"
             "%.6f\t%.6f\t%.6f"
@@ -288,23 +309,33 @@ def main():
             utw1[0], utw1[1], utw1[2],
             utw2[0], utw2[1], utw2[2],
             uXw[0],  uXw[1],  uXw[2],
+            ulw1[0], ulw1[1], ulw1[2],
+            ulw2[0], ulw2[1], ulw2[2],
             )
         )
         sys.stdout.flush()
 
     # Plot
-    trajectory, cars, not_cars = [], [], []
+    trajectory = []
     for v in poses.values():
         trajectory.append(umeyama_transform(v['Tw'], U, scale))
     trajectory = np.array(trajectory, 'f')
 
     obj_id, obj_pos = [], []
     for (track_id, object_type), coords in results_center.items():
-        _, _, uXw = coords
+        _, _, uXw, _, _ = coords
         uXw += [0., 0., args.camera_height]
         obj_id.append(track_id)
         obj_pos.append(uXw.tolist())
     obj_pos = np.array(obj_pos, 'f')
+
+    lab_id, lab_pos = [], []
+    for (track_id, object_type), coords in results_center.items():
+        _, _, _, ulw1, _ = coords
+        ulw1 += [0., 0., args.camera_height]
+        lab_id.append(track_id)
+        lab_pos.append(ulw1.tolist())
+    lab_pos = np.array(lab_pos, 'f')
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -312,12 +343,15 @@ def main():
     ax.scatter(obj_pos[:, 0], obj_pos[:, 1], obj_pos[:, 2], c='red', marker='x')
     for tid, pos in zip(obj_id, obj_pos):
         ax.text(pos[0], pos[1], pos[2], tid, c='red')
+    ax.scatter(lab_pos[:, 0], lab_pos[:, 1], lab_pos[:, 2], c='green', marker='x')
+    for tid, pos in zip(lab_id, lab_pos):
+        ax.text(pos[0], pos[1], pos[2], tid, c='green')
     ax.set_xlabel('X (East-West) [meter]')
     ax.set_ylabel('Y (North-South) [meter]')
     ax.set_zlabel('Z (Height) [meter]')
     plt.title("EPSG_%s (DE:GK2)" % 31466)
-    plt.legend(['trajectory', 'objects'], loc="best")
-    plt.savefig("result-3dm_poses-3d.png")
+    plt.legend(['trajectory', 'objects', 'gt (uncertainty)'], loc="best")
+    plt.savefig("result-3dm_poses-3d-eval.png")
     plt.show()
     plt.close()
 
@@ -327,11 +361,14 @@ def main():
     ax.scatter(obj_pos[:, 0], obj_pos[:, 1], c='red', marker='x')
     for tid, pos in zip(obj_id, obj_pos):
         ax.annotate(tid, xy=(pos[0], pos[1]), c='red')
+    ax.scatter(lab_pos[:, 0], lab_pos[:, 1], c='green', marker='x')
+    for tid, pos in zip(lab_id, lab_pos):
+        ax.annotate(tid, xy=(pos[0], pos[1]), c='green')
     ax.set_xlabel('X (East-West) [meter]')
     ax.set_ylabel('Y (North-South) [meter]')
     plt.title("EPSG_%s (DE:GK2)" % 31466)
-    plt.legend(['trajectory', 'objects'], loc="best")
-    plt.savefig("result-3dm_poses-xy.png")
+    plt.legend(['trajectory', 'objects', 'gt (uncertainty)'], loc="best")
+    plt.savefig("result-3dm_poses-xy-eval.png")
     plt.show()
     plt.close()
 
@@ -341,11 +378,14 @@ def main():
     ax.scatter(obj_pos[:, 0], obj_pos[:, 2], c='red', marker='x')
     for tid, pos in zip(obj_id, obj_pos):
         ax.annotate(tid, xy=(pos[0], pos[2]), c='red')
+    ax.scatter(lab_pos[:, 0], lab_pos[:, 2], c='green', marker='x')
+    for tid, pos in zip(lab_id, lab_pos):
+        ax.annotate(tid, xy=(pos[0], pos[2]), c='green')
     ax.set_xlabel('X (East-West) [meter]')
     ax.set_ylabel('Z (Height) [meter]')
     plt.title("EPSG_%s (DE:GK2)" % 31466)
-    plt.legend(['trajectory', 'objects'], loc="best")
-    plt.savefig("result-3dm_poses-xz.png")
+    plt.legend(['trajectory', 'objects', 'gt (uncertainty)'], loc="best")
+    plt.savefig("result-3dm_poses-xz-eval.png")
     plt.show()
     plt.close()
 

@@ -151,7 +151,7 @@ R[0,0] R[0,1] R[0,2] t[0] R[1,0] R[1,1] R[1,2] t[1] R[2,0] R[2,1] R[2,2] t[2] s
 - Estimate 3D position using camera poses. (`frameTrajectory.txt`)
 
 ```
-python 3dm_poses.py \
+python 3dm_poses-eval.py \
 --label_file datasets/data_tracking/data_tracking_label_2/training/label_02/0001.txt \
 --calib_file datasets/data_tracking/data_tracking_calib/training/calib/0001.txt \
 --pose_file outputs/frameTrajectory.txt \
@@ -189,4 +189,4 @@ track_id	object_type	utw1_x	utw1_y	utw1_z	utw2 x	utw2 y	utw2_z	uXw_x	uXw_y	uXw_z
 
 |3D|X-Y|X-Z|
 |---|---|---|
-|![3D](outputs/result-3dm_poses-3d.png)|![X-Y](outputs/result-3dm_poses-xy.png)|![X-Z](outputs/result-3dm_poses-xz.png)|
+|![3D](outputs/result-3dm_poses-3d-eval.png)|![X-Y](outputs/result-3dm_poses-xy-eval.png)|![X-Z](outputs/result-3dm_poses-xz-eval.png)|
