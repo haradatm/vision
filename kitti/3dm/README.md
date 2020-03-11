@@ -87,7 +87,7 @@ convert outputs/temp/output_*.png outputs/bbox.gif
 
 ![Bbox image](outputs/bbox.gif)
 
-- Run [OpenVSLAM](https://github.com/xdspacelab/openvslam) to output a pose file `keyframe_trajectory.txt`.
+- Run [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2) to output a pose file `keyframe_trajectory.txt`.
 
 ```
 mkdir -p datasets/data_tracking/sequences/01
@@ -148,7 +148,7 @@ R[0,0] R[0,1] R[0,2] t[0] R[1,0] R[1,1] R[1,2] t[1] R[2,0] R[2,1] R[2,2] t[2] s
 |---|---|---|
 |![3D](outputs/plot_EPSG31466-3d.png)|![X-Y](outputs/plot_EPSG31466-xy.png)|![X-Z](outputs/plot_EPSG31466-xz.png)|
 
-- Estimate 3D position using camera poses. (`frameTrajectory.txt`)
+- Estimate 3D position using camera poses (`frameTrajectory.txt`).
 
 ```
 python 3dm_poses-eval.py \
