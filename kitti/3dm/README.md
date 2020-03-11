@@ -157,7 +157,7 @@ python 3dm_poses-eval.py \
 --pose_file outputs/frameTrajectory.txt \
 --transform_file outputs/umeyama.txt \
 --exclude_objects 8 12 44 45 81 82 83 84 86 87 88 96 \
-| tee outputs/result-3dm_poses.txt
+| tee outputs/result-3dm_poses-eval.txt
 
 2020-03-08 18:49:34,255 - main - INFO - {
   "label_file": "datasets/data_tracking/data_tracking_label_2/training/label_02/0001.txt",
@@ -179,7 +179,7 @@ python 3dm_poses-eval.py \
 - Experiment’s results
 
 ```
-cat outputs/result-3dm_poses.txt
+cat outputs/result-3dm_poses-eval.txt
 track_id	object_type	utw1_x	utw1_y	utw1_z	utw2 x	utw2 y	utw2_z	uXw_x	uXw_y	uXw_z
 1	Car	5.674826	-1.334792	-0.079794	8.829640	-2.184323	-0.056986	15.269577	-6.866550	-1.026345
 2	Car	7.780750	-1.896389	-0.062476	13.015602	-3.293076	-0.053364	21.332943	-8.466352	-1.010641
