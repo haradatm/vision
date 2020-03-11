@@ -190,3 +190,5 @@ track_id	object_type	utw1_x	utw1_y	utw1_z	utw2 x	utw2 y	utw2_z	uXw_x	uXw_y	uXw_z
 |3D|X-Y|X-Z|
 |---|---|---|
 |![3D](outputs/result-3dm_poses-3d-eval.png)|![X-Y](outputs/result-3dm_poses-xy-eval.png)|![X-Z](outputs/result-3dm_poses-xz-eval.png)|
+
+*Note: 3D object location x,y,z "gt" is relative camera position in unknown camera coordinates (in meters). However, the only camera coordinates we know are what we estimated.
