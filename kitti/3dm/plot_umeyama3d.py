@@ -31,7 +31,7 @@ from scipy.spatial.transform import Rotation
 import pyproj
 
 
-def align_umeyama(model, data, known_scale=False, yaw_only=False):
+def align_umeyama(x, y, with_scale=False):
     """Implementation of the paper: S. Umeyama, Least-Squares Estimation
     of Transformation Parameters Between Two Point Patterns,
     IEEE Trans. Pattern Anal. Mach. Intell., vol. 13, no. 4, 1991.
@@ -39,8 +39,8 @@ def align_umeyama(model, data, known_scale=False, yaw_only=False):
     model = s * R * data + t
 
     Input:
-    model -- first trajectory (nx3), numpy array type
-    data -- second trajectory (nx3), numpy array type
+    x -- first trajectory (nx3), numpy array type
+    y -- second trajectory (nx3), numpy array type
 
     Output:
     s -- scale factor (scalar)
@@ -49,33 +49,40 @@ def align_umeyama(model, data, known_scale=False, yaw_only=False):
     t_error -- translational error per point (1xn)
     """
 
-    # substract mean
-    mu_M = model.mean(0)
-    mu_D = data.mean(0)
-    model_zerocentered = model - mu_M
-    data_zerocentered = data - mu_D
-    n = np.shape(model)[0]
+    # means, eq. 34 and 35
+    mean_x = x.mean(axis=0)
+    mean_y = y.mean(axis=0)
 
-    # correlation
-    C = 1.0 / n * np.dot(model_zerocentered.transpose(), data_zerocentered)
-    sigma2 = 1.0 / n * np.multiply(data_zerocentered, data_zerocentered).sum()
+    center_x = x - mean_x
+    center_y = y - mean_y
+    n = np.shape(x)[0]
+
+    # variance, eq. 36
+    # "transpose" for column subtraction
+    sigma2 = 1.0 / n * np.multiply(center_y, center_y).sum()
+
+    # covariance matrix, eq. 38
+    C = 1.0 / n * np.dot(center_x.transpose(), center_y)
+
+    # SVD (text betw. eq. 38 and 39)
     U_svd, D_svd, V_svd = np.linalg.linalg.svd(C)
     D_svd = np.diag(D_svd)
     V_svd = np.transpose(V_svd)
 
+    # S matrix, eq. 43
     S = np.eye(3)
-
     if np.linalg.det(U_svd) * np.linalg.det(V_svd) < 0:
         S[2, 2] = -1
 
+    # rotation, eq. 40
     R = np.dot(U_svd, np.dot(S, np.transpose(V_svd)))
 
-    if known_scale:
+    # scale & translation, eq. 42 and 41
+    if with_scale:
         s = 1
     else:
         s = 1.0 / sigma2 * np.trace(np.dot(D_svd, S))
-
-    t = mu_M - s * np.dot(R, mu_D)
+    t = mean_x - s * np.dot(R, mean_y)
 
     return s, R, t
 
