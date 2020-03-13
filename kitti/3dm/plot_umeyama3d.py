@@ -228,6 +228,7 @@ def main():
     parser = argparse.ArgumentParser(description='umeyama alignment')
     parser.add_argument('--gt',  default='gt.txt',  help='ground truth potions (.txt)')
     parser.add_argument('--est', default='est.txt', help='estimated potions (.txt)')
+    parser.add_argument('--epsg', default=31466, help='coordinate systems')
     parser.add_argument('--camera_height', default=1.65, help='camera height')
     args = parser.parse_args()
     # args = parser.parse_args(args=[])
@@ -251,8 +252,8 @@ def main():
         cols = line.strip().split(' ')
         est.append([float(x) for x in cols[:3]])    # (x, y, z)
 
-    # U, scale = plot_trajectory(gt, est, epsg=3857, camera_height=args.camera_height)  # EPSG  3857: 球面メルカトル図法
-    U, scale = plot_trajectory(gt, est, epsg=31466, camera_height=args.camera_height)   # EPSG 31466: DE:ガウスクルーガー, GK 2
+    # U, scale = plot_trajectory(gt, est, epsg=args.epsg, camera_height=args.camera_height)  # EPSG  3857: 球面メルカトル図法
+    U, scale = plot_trajectory(gt, est, epsg=args.epsg, camera_height=args.camera_height)   # EPSG 31466: DE:ガウスクルーガー, GK 2
 
     print(
         "R[0,0] R[0,1] R[0,2] t[0] "

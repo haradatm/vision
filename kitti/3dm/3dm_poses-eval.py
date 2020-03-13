@@ -54,7 +54,7 @@ def main():
     parser.add_argument('--label_file', default='/Data/haradatm/DATA/KITTI/data_tracking/data_tracking_label_2/training/label_02/0001.txt', help='label file')
     parser.add_argument('--calib_file', default='/Data/haradatm/DATA/KITTI/data_tracking/data_tracking_calib/training/calib/0001.txt', help='calibration data file')
     parser.add_argument('--pose_file', default='frame_trajectory.txt', help='pose file')
-    parser.add_argument('--transform_file', default='umeyama.txt', help='transfom matrix file')
+    parser.add_argument('--transform_file', default='umeyama-EPSG31466.txt', help='transfom matrix file')
     parser.add_argument('--output_dir', default='outputs', help='label file')
     parser.add_argument('--exclude_objects', type=int, nargs='+', default=[], help='moving objects to exclude')
     parser.add_argument('--camera_height', default=1.65, help='camera height')
