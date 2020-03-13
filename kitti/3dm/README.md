@@ -87,7 +87,7 @@ convert outputs/temp/output_*.png outputs/bbox.gif
 
 ![Bbox image](outputs/bbox.gif)
 
-- Run [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2) to output a pose file `keyframe_trajectory.txt`.
+- Run [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2) to output a pose file `frameTrajectory.txt`.
 
 ```
 mkdir -p datasets/data_tracking/sequences/01
