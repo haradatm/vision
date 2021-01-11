@@ -151,7 +151,7 @@ R[0,0] R[0,1] R[0,2] t[0] R[1,0] R[1,1] R[1,2] t[1] R[2,0] R[2,1] R[2,2] t[2] s
 |---|---|---|
 |![3D](outputs/plot_camera-3d.png)|![X-Z](outputs/plot_camera-xz.png)|![X-Y](outputs/plot_camera-xy.png)|
 
-|EPSG31466 (DE:GK2) 3D|EPSG31466 (DE:GK2) X-Y|EPSG31466 (DE:GK2) X-Y| 
+|EPSG31466 (DE:GK2) 3D|EPSG31466 (DE:GK2) X-Y|EPSG31466 (DE:GK2) X-Z| 
 |---|---|---|
 |![3D](outputs/plot_EPSG31466-3d.png)|![X-Y](outputs/plot_EPSG31466-xy.png)|![X-Z](outputs/plot_EPSG31466-xz.png)|
 
