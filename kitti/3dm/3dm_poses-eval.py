@@ -58,6 +58,8 @@ def main():
     parser.add_argument('--output_dir', default='outputs', help='label file')
     parser.add_argument('--exclude_objects', type=int, nargs='+', default=[], help='moving objects to exclude')
     parser.add_argument('--camera_height', default=1.65, help='camera height')
+    parser.add_argument('--thr_angle', type=float, default=None, help='threshold of angle (degree)')
+    parser.add_argument('--no_show', action="store_true", default=False, help='don\'t show plot')
     args = parser.parse_args()
     # args = parser.parse_args(args=[])
     logger.info(json.dumps(args.__dict__, indent=2))
@@ -239,6 +241,22 @@ def main():
             logger.info("--- Xw ----------")
             logger.info(Xw)
 
+            u = Xw - tw1
+            v = Xw - tw2
+            c = np.inner(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
+            deg = np.rad2deg(np.arccos(np.clip(c, -1.0, 1.0)))
+            assert deg > 0.
+
+            logger.info("--- tw1 ----------")
+            logger.info(tw1)
+            logger.info("--- tw2 ----------")
+            logger.info(tw2)
+            logger.info("--- intersection angle (degree) ----------")
+            logger.info(deg)
+            if args.thr_angle is not None:
+                if deg < args.thr_angle:
+                    continue
+
             re_point1, _ = cv2.projectPoints(Xw, rc1, tc1, camera_param, dist_coef)
             re_point1 = re_point1.astype('i')[0][0]
             logger.info("--- origin (u1, v1) ----------")
@@ -274,6 +292,7 @@ def main():
                 uXw[0],  uXw[1],  uXw[2],
                 ulw1[0], ulw1[1], ulw1[2],
                 ulw2[0], ulw2[1], ulw2[2],
+                error1, error2
             ])
 
     results_center = {}
@@ -283,27 +302,30 @@ def main():
         utw2 = np.median(coords[:, 3: 6], axis=0)
         uXw = np.median(coords[:, 6: 9], axis=0)
         ulw1 = np.median(coords[:, 9:12], axis=0)
-        ulw2 = np.median(coords[:, 12:], axis=0)
-        results_center[(track_id, object_type)] = (utw1, utw2, uXw, ulw1, ulw2)
+        ulw2 = np.median(coords[:, 12:15], axis=0)
+        error = np.median(coords[:, 15:], axis=None)
+        results_center[(track_id, object_type)] = (utw1, utw2, uXw, ulw1, ulw2, error)
 
     # STDOUT
     print(
         "track_id\tobject_type\t"
         "utw1_x\tutw1_y\tutw1_z\t"
         "utw2 x\tutw2 y\tutw2_z\t"
-        "uXw_x\tuXw_y\tuXw_z"
+        "uXw_x\tuXw_y\tuXw_z\t"
         "ulw1_x\tulw1_y\tulw1_z\t"
         "ulw2 x\tulw2 y\tulw2_z\t"
+        "error"
     )
     for (track_id, object_type), coords in results_center.items():
-        utw1, utw2, uXw, ulw1, ulw2 = coords
+        utw1, utw2, uXw, ulw1, ulw2, error = coords
         print(
             "%d\t%s\t"
             "%.6f\t%.6f\t%.6f\t"
             "%.6f\t%.6f\t%.6f\t"
             "%.6f\t%.6f\t%.6f\t"
             "%.6f\t%.6f\t%.6f\t"
-            "%.6f\t%.6f\t%.6f"
+            "%.6f\t%.6f\t%.6f\t"
+            "%.6f"
             % (
             track_id, object_type1,
             utw1[0], utw1[1], utw1[2],
@@ -311,6 +333,7 @@ def main():
             uXw[0],  uXw[1],  uXw[2],
             ulw1[0], ulw1[1], ulw1[2],
             ulw2[0], ulw2[1], ulw2[2],
+            error
             )
         )
         sys.stdout.flush()
@@ -323,7 +346,7 @@ def main():
 
     obj_id, obj_pos = [], []
     for (track_id, object_type), coords in results_center.items():
-        _, _, uXw, _, _ = coords
+        _, _, uXw, _, _, _ = coords
         uXw += [0., 0., args.camera_height]
         obj_id.append(track_id)
         obj_pos.append(uXw.tolist())
@@ -331,7 +354,7 @@ def main():
 
     lab_id, lab_pos = [], []
     for (track_id, object_type), coords in results_center.items():
-        _, _, _, ulw1, _ = coords
+        _, _, _, ulw1, _, _ = coords
         ulw1 += [0., 0., args.camera_height]
         lab_id.append(track_id)
         lab_pos.append(ulw1.tolist())
@@ -343,17 +366,19 @@ def main():
     ax.scatter(obj_pos[:, 0], obj_pos[:, 1], obj_pos[:, 2], c='red', marker='x')
     for tid, pos in zip(obj_id, obj_pos):
         ax.text(pos[0], pos[1], pos[2], tid, c='red')
-    ax.scatter(lab_pos[:, 0], lab_pos[:, 1], lab_pos[:, 2], c='green', marker='x')
+    ax.scatter(lab_pos[:, 0], lab_pos[:, 1], -lab_pos[:, 2], c='green', marker='x')
     for tid, pos in zip(lab_id, lab_pos):
-        ax.text(pos[0], pos[1], pos[2], tid, c='green')
+        ax.text(pos[0], pos[1], -pos[2], tid, c='green')
     ax.set_xlabel('X (East-West) [meter]')
     ax.set_ylabel('Y (North-South) [meter]')
     ax.set_zlabel('Z (Height) [meter]')
     plt.title("EPSG_%s (DE:GK2)" % 31466)
     plt.legend(['trajectory', 'objects', 'gt (uncertainty)'], loc="best")
     plt.savefig("result-3dm_poses-3d-eval.png")
+    # if not args.no_show:
+    #     plt.show()
+    # plt.close()
     plt.show()
-    plt.close()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -369,7 +394,8 @@ def main():
     plt.title("EPSG_%s (DE:GK2)" % 31466)
     plt.legend(['trajectory', 'objects', 'gt (uncertainty)'], loc="best")
     plt.savefig("result-3dm_poses-xy-eval.png")
-    plt.show()
+    if not args.no_show:
+        plt.show()
     plt.close()
 
     fig = plt.figure()
@@ -386,7 +412,26 @@ def main():
     plt.title("EPSG_%s (DE:GK2)" % 31466)
     plt.legend(['trajectory', 'objects', 'gt (uncertainty)'], loc="best")
     plt.savefig("result-3dm_poses-xz-eval.png")
-    plt.show()
+    if not args.no_show:
+        plt.show()
+    plt.close()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(trajectory[:, 1], trajectory[:, 2], c='blue', marker='.')
+    ax.scatter(obj_pos[:, 1], obj_pos[:, 2], c='red', marker='x')
+    for tid, pos in zip(obj_id, obj_pos):
+        ax.annotate(tid, xy=(pos[1], pos[2]), c='red')
+    ax.scatter(lab_pos[:, 1], lab_pos[:, 2], c='green', marker='x')
+    for tid, pos in zip(lab_id, lab_pos):
+        ax.annotate(tid, xy=(pos[1], pos[2]), c='green')
+    ax.set_xlabel('Y (North-South) [meter]')
+    ax.set_ylabel('Z (Height) [meter]')
+    plt.title("EPSG_%s (DE:GK2)" % 31466)
+    plt.legend(['trajectory', 'objects', 'gt (uncertainty)'], loc="best")
+    plt.savefig("result-3dm_poses-yz-eval.png")
+    if not args.no_show:
+        plt.show()
     plt.close()
 
 

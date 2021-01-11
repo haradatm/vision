@@ -7,7 +7,7 @@ This example code is a OpenCV example code for Visual SLAM.
 ### Dependencies
 - Python 3.7
 - OpenCV 3.4
-- [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2)
+- [ORB_SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3)
 
 In addition, please add the project folder to PYTHONPATH and `conca install` the following packages:
 - `cv2`
@@ -87,7 +87,7 @@ convert outputs/temp/output_*.png outputs/bbox.gif
 
 ![Bbox image](outputs/bbox.gif)
 
-- Run [ORB_SLAM2](https://github.com/raulmur/ORB_SLAM2) to output a pose file `frameTrajectory.txt`.
+- Run [ORB_SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3) to output a pose file `frameTrajectory.txt`.
 
 ```
 mkdir -p datasets/data_tracking/sequences/01
@@ -112,10 +112,10 @@ datasets
             │   └── 000446.png
             └── times.txt
 ```
-- Run ORB_SLAM2 and get the pose. (`frameTrajectory.txt`)
+- Run ORB_SLAM3 and get the pose. (`frameTrajectory.txt`)
 
 ```
-SLAM=/path_to_ORB_SLAM2; \
+SLAM=/path_to_ORB_SLAM3; \
 ${SLAM}/Examples/Monocular/mono_kitti \
 ${SLAM}/Vocabulary/ORBvoc.txt \
 datasets/data_tracking/tracking-0001.yaml \
@@ -134,16 +134,17 @@ python plot_umeyama3d.py \
 --epsg 31466 \
 > outputs/umeyama-EPSG31466.txt
 
-2020-03-08 18:12:13,027 - main - INFO - {
+2021-01-11 11:49:45,401 - main - INFO - {
   "gt": "outputs/gt-trajectory-0001.txt",
   "est": "outputs/est-trajectory-0001.txt",
+  "epsg": "31466",
   "camera_height": 1.65
 }
 ```
 ```
 cat outputs/umeyama-EPSG31466.txt
 R[0,0] R[0,1] R[0,2] t[0] R[1,0] R[1,1] R[1,2] t[1] R[2,0] R[2,1] R[2,2] t[2] s
--0.261392 0.027647 0.964837 4.624747 -0.962645 0.065678 -0.262680 -1.049018 -0.070631 -0.997458 0.009446 -0.087966 21.330576
+-0.256375 0.028110 0.966168 1.053273 -0.963923 0.066591 -0.257717 -0.363450 -0.071582 -0.997384 0.010024 -0.097220 22.325137
 ```
 
 |Camera 3D|Camera X-Z|Camera X-Y| 
@@ -172,13 +173,21 @@ python 3dm_poses-eval.py \
   "transform_file": "outputs/umeyama-EPSG31466.txt",
   "output_dir": "outputs",
   "exclude_objects": [ 8, 12, 44, 45, 81, 82, 83, 84, 86, 87, 88, 96 ]
+2021-01-11 11:56:15,937 - main - INFO - {
+  "label_file": "datasets/data_tracking/data_tracking_label_2/training/label_02/0001.txt",
+  "calib_file": "datasets/data_tracking/data_tracking_calib/training/calib/0001.txt",
+  "pose_file": "outputs/frameTrajectory.txt",
+  "transform_file": "outputs/umeyama-EPSG31466.txt",
+  "output_dir": "outputs",
+  "exclude_objects": [8, 12, 44, 45, 81, 82, 83, 84, 86, 87, 88, 96],
+  "camera_height": 1.65
 }
-2020-03-08 18:49:34,256 - main - INFO - --- K ----------
-2020-03-08 18:49:34,256 - main - INFO - [[721.5377   0.     609.5593]
+2021-01-11 11:56:15,938 - main - INFO - --- K ----------
+2021-01-11 11:56:15,938 - main - INFO - [[721.5377   0.     609.5593]
  [  0.     721.5377 172.854 ]
  [  0.       0.       1.    ]]
-2020-03-08 18:49:34,256 - main - INFO - --- dist_coef ----------
-2020-03-08 18:49:34,256 - main - INFO - [[0. 0. 0. 0. 0.]]
+2021-01-11 11:56:15,938 - main - INFO - --- dist_coef ----------
+2021-01-11 11:56:15,938 - main - INFO - [[0. 0. 0. 0. 0.]]
 :
 ```
 
@@ -186,10 +195,10 @@ python 3dm_poses-eval.py \
 
 ```
 cat outputs/result-3dm_poses-eval.txt
-track_id	object_type	utw1_x	utw1_y	utw1_z	utw2 x	utw2 y	utw2_z	uXw_x	uXw_y	uXw_z
-1	Car	5.674826	-1.334792	-0.079794	8.829640	-2.184323	-0.056986	15.269577	-6.866550	-1.026345
-2	Car	7.780750	-1.896389	-0.062476	13.015602	-3.293076	-0.053364	21.332943	-8.466352	-1.010641
-3	Car	7.780750	-1.896389	-0.062476	14.059823	-3.567164	-0.045905	27.951963	-1.304364	-0.910986
+track_id	object_type	utw1_x	utw1_y	utw1_z	utw2 x	utw2 y	utw2_z	uXw_x	uXw_y	uXw_z	ulw1_x	ulw1_y	ulw1_z	ulw2 x	ulw2 y	ulw2_z	error
+1	Car	3.259275	-0.966023	-0.081054	6.544175	-1.894785	-0.067088	13.258957	-6.667819	-1.070431	14.184595	-6.861387	-1.692258	14.245152	-6.901980	-1.651233	1.160367
+2	Car	5.467335	-1.579211	-0.077611	10.989427	-2.988082	-0.039046	19.686182	-8.356985	-1.047002	20.148460	-8.396473	-1.644757	20.284641	-8.396473	-1.631077	1.008312
+3	Car	5.467335	-1.579211	-0.077611	12.074421	-3.247233	-0.029041	26.646099	-0.794050	-0.944460	26.746033	-0.852897	-1.551020	26.998493	-0.877923	-1.496542	1.121371
 :
 ```
 

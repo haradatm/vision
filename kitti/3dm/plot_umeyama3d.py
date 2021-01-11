@@ -87,7 +87,7 @@ def align_umeyama(x, y, with_scale=False):
     return s, R, t
 
 
-def plot_trajectory(gt, est, epsg=3857, camera_height=1.65):
+def plot_trajectory(gt, est, epsg=3857, camera_height=1.65, oxts_height=0.93):
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -142,15 +142,19 @@ def plot_trajectory(gt, est, epsg=3857, camera_height=1.65):
     plt.show()
     plt.close()
 
-    trans_from = pyproj.Proj('+init=EPSG:%s' % 4326)
-    trans_to   = pyproj.Proj('+init=EPSG:%s' % epsg)
+    # trans_from = pyproj.Proj('+init=EPSG:%s' % 4326)
+    # trans_to   = pyproj.Proj('+init=EPSG:%s' % epsg)
+    trans_from = 'EPSG:%s' % 4326
+    trans_to   = 'EPSG:%s' % epsg
 
     gt_trans = []
     init_x, init_y, init_z = 0., 0., 0.
 
     for i, gt_p in enumerate(gt):
         # (lan, lon, alt) -> (lon, lan, alt)
-        x, y, z = pyproj.transform(trans_from, trans_to, gt_p[1], gt_p[0], gt_p[2] + camera_height)
+        # x, y, z = pyproj.transform(trans_from, trans_to, gt_p[1], gt_p[0], gt_p[2] + (camera_height - oxts_height))
+        transformer = pyproj.Transformer.from_crs(trans_from, trans_to, always_xy=True)
+        x, y, z = transformer.transform(gt_p[1], gt_p[0], gt_p[2] + (camera_height - oxts_height))
         if i == 0:
             init_x, init_y, init_z = (x, y, z)
         gt_trans.append((x - init_x, y - init_y, z - init_z))
@@ -170,7 +174,7 @@ def plot_trajectory(gt, est, epsg=3857, camera_height=1.65):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     for i, (gt_p, est_p) in enumerate(zip(gt_trans, est_umeyama)):
-        ax.scatter( gt_p[0],  gt_p[1],  gt_p[2], c='blue', marker='.')
+        ax.scatter( gt_p[0],  gt_p[1], -gt_p[2], c='blue', marker='.')
         ax.scatter(est_p[0], est_p[1], est_p[2], c='red',  marker='.')
     ax.set_xlabel('X (East-West) [meter]')
     ax.set_ylabel('Y (North-South) [meter]')
@@ -197,7 +201,7 @@ def plot_trajectory(gt, est, epsg=3857, camera_height=1.65):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     for i, (gt_p, est_p) in enumerate(zip(gt_trans, est_umeyama)):
-        ax.scatter( gt_p[0],  gt_p[2], c='blue', marker='.')
+        ax.scatter( gt_p[0], -gt_p[2], c='blue', marker='.')
         ax.scatter(est_p[0], est_p[2], c='red',  marker='.')
     ax.set_xlabel('X (East-West) [meter]')
     ax.set_ylabel('Z (Altitude) [meter]')
@@ -210,7 +214,7 @@ def plot_trajectory(gt, est, epsg=3857, camera_height=1.65):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     for i, (gt_p, est_p) in enumerate(zip(gt_trans, est_umeyama)):
-        ax.scatter( gt_p[1],  gt_p[2], c='blue', marker='.')
+        ax.scatter( gt_p[1], -gt_p[2], c='blue', marker='.')
         ax.scatter(est_p[1], est_p[2], c='red',  marker='.')
     ax.set_xlabel('Y (North-South) [meter]')
     ax.set_ylabel('Z (Altitude) [meter]')
